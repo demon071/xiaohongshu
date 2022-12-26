@@ -1,4 +1,3 @@
-#!/bin/env python
 import asyncio
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -15,7 +14,8 @@ import functools, key
 from pathlib import Path
 from qt_material import apply_stylesheet
 from download import DownloadVideos
-
+#7064576373
+#anhdaik1996.
 __version__ = '2202.11.05'
 
 class RequestLogger(QtCore.QObject):
@@ -29,7 +29,17 @@ class RequestLogger(QtCore.QObject):
             data = flow.response.text
             self.url.emit({
                 'url': url,
-                'data': data
+                'data': data,
+                'type': 'post'
+            })
+        if '/api/sns/v6/homefeed' in flow.request.url:
+            url = flow.request.url
+            # print(url)
+            data = flow.response.text
+            self.url.emit({
+                'url': url,
+                'data': data,
+                'type': 'feed'
             })
 
 class MyForm(QtWidgets.QMainWindow):
@@ -83,24 +93,46 @@ class MyForm(QtWidgets.QMainWindow):
         # self.ui.textEdit.append(_dict['url'])
         import json
         json_data = json.loads(_dict['data'])
-        for x in json_data['data']['notes']:
-            # data.notes[0].type
-            if x['type'] == 'video':
-                rows = self.ui.tableWidget.rowCount()
-                self.ui.tableWidget.insertRow(rows)
-                self.ui.tableWidget.setItem(rows, 0, QtWidgets.QTableWidgetItem(str(x['id'])))
-                self.ui.tableWidget.setItem(rows, 1, QtWidgets.QTableWidgetItem(str(x['title'])))
-                self.ui.tableWidget.setItem(rows, 2, QtWidgets.QTableWidgetItem(str(x['user']['userid'])))
-                self.ui.tableWidget.setItem(rows, 3, QtWidgets.QTableWidgetItem(str(x['likes'])))
-                vid = str(x['id'])
-                caption = x['title']
-                url1 = x['video_info_v2']['media']['stream']['h264'][0]['backup_urls'][0]
-                url2 = x['video_info_v2']['media']['stream']['h264'][0]['backup_urls'][1]
-                user = x['user']['userid']
-                name = x['user']['nickname']
-                data = [vid, caption, url1, url2, rows, user, name]
-                self.q.put(data)
-                self.ui.statusbar.showMessage('Total video: '+ str(rows))
+        if _dict['type'] == 'post':
+            for x in json_data['data']['notes']:
+                # data.notes[0].type
+                if x['type'] == 'video':
+                    rows = self.ui.tableWidget.rowCount()
+                    self.ui.tableWidget.insertRow(rows)
+                    self.ui.tableWidget.setItem(rows, 0, QtWidgets.QTableWidgetItem(str(x['id'])))
+                    self.ui.tableWidget.setItem(rows, 1, QtWidgets.QTableWidgetItem(str(x['title'])))
+                    self.ui.tableWidget.setItem(rows, 2, QtWidgets.QTableWidgetItem(str(x['user']['userid'])))
+                    self.ui.tableWidget.setItem(rows, 3, QtWidgets.QTableWidgetItem(str(x['likes'])))
+                    vid = str(x['id'])
+                    caption = x['title']
+                    url1 = x['video_info_v2']['media']['stream']['h264'][0]['backup_urls'][0]
+                    url2 = x['video_info_v2']['media']['stream']['h264'][0]['backup_urls'][1]
+                    user = x['user']['userid']
+                    name = x['user']['nickname']
+                    data = [vid, caption, url1, url2, rows, user, name]
+                    self.q.put(data)
+                    self.ui.statusbar.showMessage('Total video: '+ str(rows))
+
+        if _dict['type'] == 'feed':
+            for x in json_data['data']:
+                # data.notes[0].type
+                if x['type'] == 'video':
+                    rows = self.ui.tableWidget.rowCount()
+                    self.ui.tableWidget.insertRow(rows)
+                    self.ui.tableWidget.setItem(rows, 0, QtWidgets.QTableWidgetItem(str(x['id'])))
+                    self.ui.tableWidget.setItem(rows, 1, QtWidgets.QTableWidgetItem(str(x['title'])))
+                    self.ui.tableWidget.setItem(rows, 2, QtWidgets.QTableWidgetItem(str(x['user']['userid'])))
+                    self.ui.tableWidget.setItem(rows, 3, QtWidgets.QTableWidgetItem(str(x['likes'])))
+                    vid = str(x['id'])
+                    caption = x['title']
+                    url1 = x['video_info_v2']['media']['stream']['h264'][0]['backup_urls'][0]
+                    url2 = x['video_info_v2']['media']['stream']['h264'][0]['backup_urls'][1]
+                    user = x['user']['userid']
+                    name = x['user']['nickname']
+                    data = [vid, caption, url1, url2, rows, user, name]
+                    self.q.put(data)
+                    self.ui.statusbar.showMessage('Total video: '+ str(rows))
+
                 # data.notes[0].user.nickname
             # data.notes[1].video_info_v2.media.stream.h264[0].backup_urls[0]
             # self.ui.tableWidget.setItem(rows, 4, QTableWidgetItem(url1))
