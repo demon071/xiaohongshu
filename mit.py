@@ -1,5 +1,5 @@
 import asyncio
-import sys
+import sys, re
 from PyQt5 import QtCore, QtGui, QtWidgets
 from mitmproxy import options
 from mitmproxy.tools import dump
@@ -114,6 +114,8 @@ class MyForm(QtWidgets.QMainWindow):
                     self.ui.statusbar.showMessage('Total video: '+ str(rows))
 
         if _dict['type'] == 'feed':
+            feed_name = re.findall(r'oid=([a-z\.]+)', _dict['url'])[0].replace('homefeed.','')
+            
             for x in json_data['data']:
                 # data.notes[0].type
                 if x['type'] == 'video':
@@ -129,7 +131,7 @@ class MyForm(QtWidgets.QMainWindow):
                     url2 = x['video_info_v2']['media']['stream']['h264'][0]['backup_urls'][1]
                     user = x['user']['userid']
                     name = x['user']['nickname']
-                    data = [vid, caption, url1, url2, rows, user, name]
+                    data = [vid, caption, url1, url2, rows, feed_name, name]
                     self.q.put(data)
                     self.ui.statusbar.showMessage('Total video: '+ str(rows))
 
